@@ -28,7 +28,7 @@ const users = {
 			            job: "Aspring actress"
 			          },
 		      {
-			            id: "zap555",
+			            id: "2",
 			            name: "Dennis",
 			            job: "Bartender"
 			          }
@@ -55,54 +55,63 @@ app.get("/users", (req, res) => {
 			      }
 });
 
-/*
-const findUserByJob = (job) => {
-	  return users["users_list"].filter(
-		      (user) => user["job"] === job
-		    ); 
-};*/
-
-/*
-app.get("/users2", (req, res) => {
-	  const name = req.query.name;
-	  const job = req.query.job;
-	  if (name != undefined) {
-		      let result = findUserByName(name);
-		      result = { users_list: result };  
-		      let result.filter((user) => user["job"] === job);
-		      res.send(result);
-		    } else {
-			        res.send(users);
-			      }
-}); 
-*/
-
-
 const findUserById = (id) =>
 	  users["users_list"].find((user) => user["id"] === id);
 
-app.get("/users/:id", (req, res) => {
+	/*app.get("/users/:id", (req, res) => {
 	  const id = req.params["id"]; //or req.params.id
 	  let result = findUserById(id);
 	  if (result === undefined) {
 		      res.status(404).send("Resource not found.");
 		    } else {
 			        res.send(result);
-			      }
-});
+			      } 
+});*/
 
+
+const genRanID = (userList) => {
+	let id;
+	do {
+		id = (Math.trunc(Math.random() * 100000000)).toString();
+	}while (userList.some(user => user.id === id));
+	return id;
+};
 
 const addUser = (user) => {
+		user.id = genRanID(users["users_list"]);
 	  users["users_list"].push(user);
 	  return user;
 };
 
 app.post("/users", (req, res) => {
 	  const userToAdd = req.body;
-	  addUser(userToAdd);
-	  res.send();
+	  const addedUser = addUser(userToAdd);
+	  res.status(201).send(addedUser);
 });
 
+const delUser = (id) => {
+	//const index = users["users_list"].findIndex((user) => user.id === id);
+	const index = findUserById(id);
+	if (index !== -1) {
+		users["users_list"].splice(index, 1);
+		return true;
+	} 
+	else {
+		return false;
+	}
+};
+
+app.delete("/users/:id", (req, res) => {
+    const id = req.params["id"];
+    const suc = delUser(id);
+
+    if (suc) {
+        res.status(204).send();  
+    } 
+	else {
+        res.status(404).send("Error not found.");
+    }
+});
 
 app.listen(port, () => {
 	  console.log(
